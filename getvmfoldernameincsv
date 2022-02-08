@@ -1,0 +1,19 @@
+Import-module vmware.vimautomation.core
+connect-viserver –server X.X.X.X -User xxxxxx@xxxxxx -Password xxxxxxx
+
+ForEach ($Datacenter in (Get-Datacenter | Sort-Object -Property Name)) {
+  ForEach ($Cluster in ($Datacenter | Get-Cluster | Sort-Object -Property Name)) { 
+    ForEach ($VM in ($Cluster | Get-VM | Sort-Object -Property Name)) {
+      ForEach ($HardDisk in ($VM | Get-HardDisk | Sort-Object -Property Name)) {
+        "" | Select-Object -Property @{N="VM";E={$VM.Name}},
+          @{N="Datacenter";E={$Datacenter.name}},
+          @{N="Cluster";E={$Cluster.Name}},
+          @{N="Hard Disk";E={$HardDisk.Name}},
+          @{N="Datastore";E={$HardDisk.FileName.Split("]")[0].TrimStart("[")}},
+          @{N="VMDKpath";E={$HardDisk.FileName}} | Export-Csv C:\report.csv -Append -Force
+      }
+    }
+  }
+}    
+
+Disconnect-VIServer -Server X.X.X.X
